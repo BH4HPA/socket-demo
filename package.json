@@ -1,0 +1,19 @@
+{
+  "name": "socket-demo",
+  "version": "1.0.0",
+  "scripts": {
+    "server": "nodemon --config nodemon_server.json src/server/index.ts",
+    "client": "nodemon --config nodemon_client.json src/client/index.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "@types/prompts": "^2.4.9",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "chalk": "^4",
+    "nodemon": "^3.1.7",
+    "prompts": "^2.4.2",
+    "ts-node": "^10.9.2"
+  }
+}

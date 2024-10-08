@@ -1,0 +1,46 @@
+import chalk from 'chalk';
+
+function getCurrentTime() {
+  const date = new Date();
+  return (
+    `${date.getHours().toString().padStart(2, '0')}:${date
+      .getMinutes()
+      .toString()
+      .padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}` +
+    chalk.gray(`.${date.getMilliseconds().toString().padStart(3, '0')}`)
+  );
+}
+
+export function log(...message: any[]) {
+  console.log(getCurrentTime(), chalk.gray('>>'), ...message);
+}
+
+export function moduleLog(moduleName: string, ...message: any[]) {
+  console.log(
+    getCurrentTime(),
+    chalk.gray('>>'),
+    moduleName === 'TCP' ? chalk.blue(moduleName) : chalk.red(moduleName),
+    chalk.gray('>>'),
+    ...message
+  );
+}
+
+export function moduleRemoteLog(
+  moduleName: string,
+  remoteAdress: string,
+  ...message: any[]
+) {
+  console.log(
+    getCurrentTime(),
+    chalk.gray('>>'),
+    moduleName === 'TCP' ? chalk.blue(moduleName) : chalk.red(moduleName),
+    chalk.gray('>>'),
+    chalk.green(remoteAdress),
+    chalk.gray('>>'),
+    ...message
+  );
+}
+
+export function logChain(...message: any[]) {
+  return message.join(chalk.gray(' >> '));
+}
