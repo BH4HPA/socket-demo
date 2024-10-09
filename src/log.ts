@@ -1,13 +1,16 @@
 import chalk from 'chalk';
 
-function getCurrentTime() {
+function getCurrentTime(less: boolean = false) {
   const date = new Date();
   return (
     `${date.getHours().toString().padStart(2, '0')}:${date
       .getMinutes()
       .toString()
-      .padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}` +
-    chalk.gray(`.${date.getMilliseconds().toString().padStart(3, '0')}`)
+      .padStart(2, '0')}` +
+    (less
+      ? ''
+      : `:${date.getSeconds().toString().padStart(2, '0')}` +
+        chalk.gray(`.${date.getMilliseconds().toString().padStart(3, '0')}`))
   );
 }
 
@@ -45,10 +48,14 @@ export function logChain(...message: any[]) {
   return message.join(chalk.gray(' >> '));
 }
 
-export function messageLog(user: number, message: string) {
+export function messageLog(user: number | string, message: string) {
   console.log(
-    chalk.yellow(`[${user}]:`),
-    message,
-    chalk.gray(`\t\t...${getCurrentTime()}`)
+    chalk.yellow(`[${user}]`),
+    chalk.gray(`${getCurrentTime(true)}`),
+    message
   );
 }
+
+export const styles = {
+  underline: chalk.underline,
+};

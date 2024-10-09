@@ -22,14 +22,14 @@ async function main() {
   udp_client.on('message', (msg, rinfo) => {
     const fromPort = rinfo.port;
     if (fromPort === 33100) {
-      moduleRemoteLog('UDP', `服务器`, logChain('收到数据', msg));
+      messageLog('服务器', msg.toString());
     } else {
       // moduleRemoteLog('UDP', `${fromPort}`, logChain('收到数据', msg));
       messageLog(fromPort, msg.toString());
     }
   });
 
-  // await new Promise((resolve) => setTimeout(resolve, 1000));
+  await new Promise((resolve) => setTimeout(resolve, 200));
 
   // // UDP: 发送数据
   // udp_client.send('Hello, UDP Server', 33100, '::1');
@@ -56,6 +56,7 @@ async function main() {
   // TCP: 处理连接断开
   tcp_client.on('end', () => {
     moduleLog('TCP', '已断开连接');
+    process.exit(0);
   });
 
   // 创建readline接口实例
@@ -65,9 +66,24 @@ async function main() {
 
   // 监听用户输入
   rl.on('line', (input) => {
-    // 当用户输入一行并按下Enter键后，这个事件会被触发
-    for (const port of current_online_udp_ports) {
-      udp_client.send(input, port, '::1');
+    if (input.startsWith('/')) {
+      // command
+      const [command, ...args] = input.split(' ');
+      if (command === '/login') {
+        const [username, password] = args;
+        tcp_client.write(
+          ConstructTransportMessage('login', `${username} ${password}`)
+        );
+      } else if (command === '/register') {
+        const [username, password] = args;
+        tcp_client.write(
+          ConstructTransportMessage('register', `${username} ${password}`)
+        );
+      }
+    } else {
+      for (const port of current_online_udp_ports) {
+        udp_client.send(input, port, '::1');
+      }
     }
   });
 
