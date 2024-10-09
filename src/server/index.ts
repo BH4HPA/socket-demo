@@ -61,7 +61,7 @@ const tcp_server = net.createServer((socket) => {
       );
       requestLoginTimeoutId = setInterval(() => {
         requestTimes++;
-        if (requestTimes > 60)
+        if (requestTimes > 600)
           if (requestLoginTimeoutId) {
             clearInterval(requestLoginTimeoutId);
             udp_server.send(
