@@ -95,7 +95,23 @@ async function main() {
       } else if (command === '/list') {
         console.log('当前在线客户端：');
         for (const client of current_online_clients) {
-          console.log(`- ${client.username}(${client.userId}) @ ${client.udp_port}`);
+          console.log(
+            `- ${client.username}(${client.userId}) @ ${client.udp_port}`
+          );
+        }
+      } else if (command === '/msg') {
+        const [userId, ...message] = args;
+        const targetClient = current_online_clients.find(
+          (c) => c.userId === parseInt(userId)
+        );
+        if (targetClient) {
+          udp_client.send(
+            '(私聊) ' + message.join(' '),
+            targetClient.udp_port,
+            '::1'
+          );
+        } else {
+          console.log('用户不在线');
         }
       }
     } else {
