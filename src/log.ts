@@ -44,3 +44,11 @@ export function moduleRemoteLog(
 export function logChain(...message: any[]) {
   return message.join(chalk.gray(' >> '));
 }
+
+export function messageLog(user: number, message: string) {
+  console.log(
+    chalk.yellow(`[${user}]:`),
+    message,
+    chalk.gray(`\t\t...${getCurrentTime()}`)
+  );
+}

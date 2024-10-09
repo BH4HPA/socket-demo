@@ -1,10 +1,14 @@
 import dgram from 'dgram';
 import net from 'net';
 import readline from 'readline';
-import { log, logChain, moduleLog, moduleRemoteLog } from '../log';
+import { log, logChain, messageLog, moduleLog, moduleRemoteLog } from '../log';
+import { ConstructTransportMessage, ParseTransportMessage } from '../type';
+import { parse } from 'path';
 
 const udp_client = dgram.createSocket('udp6');
 const udp_client_port = Math.floor(Math.random() * 100) + 33100;
+
+let current_online_udp_ports: number[] = [];
 
 async function main() {
   log('Client Started.');
@@ -19,24 +23,34 @@ async function main() {
     const fromPort = rinfo.port;
     if (fromPort === 33100) {
       moduleRemoteLog('UDP', `服务器`, logChain('收到数据', msg));
+    } else {
+      // moduleRemoteLog('UDP', `${fromPort}`, logChain('收到数据', msg));
+      messageLog(fromPort, msg.toString());
     }
   });
 
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  // await new Promise((resolve) => setTimeout(resolve, 1000));
 
-  // UDP: 发送数据
-  udp_client.send('Hello, UDP Server', 33100, '::1');
+  // // UDP: 发送数据
+  // udp_client.send('Hello, UDP Server', 33100, '::1');
 
   // TCP: 连接到服务器
-  const tcp_client = net.createConnection({ port: 33200 }, () => {
+  const tcp_client = net.createConnection({ port: 33200 }, async () => {
     moduleLog('TCP', '已连接');
-    tcp_client.write('Hello, TCP Server');
+    tcp_client.write(
+      ConstructTransportMessage('port', udp_client_port.toString())
+    );
   });
 
   // TCP: 接收服务器发送的数据
-  tcp_client.on('data', (data) => {
-    moduleLog('TCP', logChain('收到数据', data));
-    // tcp_client.end();
+  tcp_client.on('data', (raw_data) => {
+    const data = ParseTransportMessage(raw_data.toString());
+    // moduleLog('TCP', logChain('收到数据', data.type, data.data));
+    if (data.type === 'ports') {
+      const ports = data.data.split(',');
+      // moduleLog('TCP', logChain('在线 UDP 客户端端口', ports));
+      current_online_udp_ports = ports.map((port) => parseInt(port));
+    }
   });
 
   // TCP: 处理连接断开
@@ -52,7 +66,9 @@ async function main() {
   // 监听用户输入
   rl.on('line', (input) => {
     // 当用户输入一行并按下Enter键后，这个事件会被触发
-    log(logChain('用户输入', input));
+    for (const port of current_online_udp_ports) {
+      udp_client.send(input, port, '::1');
+    }
   });
 
   // 处理用户的错误输入，例如EOF
