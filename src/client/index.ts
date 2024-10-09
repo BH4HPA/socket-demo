@@ -2,13 +2,18 @@ import dgram from 'dgram';
 import net from 'net';
 import readline from 'readline';
 import { log, logChain, messageLog, moduleLog, moduleRemoteLog } from '../log';
-import { ConstructTransportMessage, ParseTransportMessage } from '../type';
+import {
+  ConstructTransportMessage,
+  IClient,
+  ParseTransportMessage,
+} from '../type';
 import { parse } from 'path';
 
 const udp_client = dgram.createSocket('udp6');
 const udp_client_port = Math.floor(Math.random() * 100) + 33100;
 
 let current_online_udp_ports: number[] = [];
+let current_online_clients: IClient[] = [];
 
 async function main() {
   log('Client Started.');
@@ -25,7 +30,11 @@ async function main() {
       messageLog('服务器', msg.toString());
     } else {
       // moduleRemoteLog('UDP', `${fromPort}`, logChain('收到数据', msg));
-      messageLog(fromPort, msg.toString());
+      messageLog(
+        current_online_clients.find((c) => c.udp_port === fromPort)?.username ||
+          fromPort,
+        msg.toString()
+      );
     }
   });
 
@@ -50,6 +59,10 @@ async function main() {
       const ports = data.data.split(',');
       // moduleLog('TCP', logChain('在线 UDP 客户端端口', ports));
       current_online_udp_ports = ports.map((port) => parseInt(port));
+    } else if (data.type === 'clients') {
+      const clients = JSON.parse(data.data) as IClient[];
+      // moduleLog('TCP', logChain('在线客户端', clients));
+      current_online_clients = clients;
     }
   });
 
@@ -79,6 +92,11 @@ async function main() {
         tcp_client.write(
           ConstructTransportMessage('register', `${username} ${password}`)
         );
+      } else if (command === '/list') {
+        console.log('当前在线客户端：');
+        for (const client of current_online_clients) {
+          console.log(`- ${client.username}(${client.userId}) @ ${client.udp_port}`);
+        }
       }
     } else {
       for (const port of current_online_udp_ports) {

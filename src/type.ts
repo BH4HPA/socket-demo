@@ -1,4 +1,4 @@
-type ITransportMessageType = 'ports' | 'port' | 'login' | 'register';
+type ITransportMessageType = 'ports' | 'port' | 'login' | 'register' | 'clients';
 
 export interface ITransportMessage {
   type: ITransportMessageType;
@@ -8,6 +8,7 @@ export interface ITransportMessage {
 export interface IClient {
   udp_port: number;
   userId: number;
+  username: string;
 }
 
 export interface IUser {

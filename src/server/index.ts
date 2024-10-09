@@ -83,7 +83,11 @@ const tcp_server = net.createServer((socket) => {
       } else if (online_clients.find((c) => c.userId === user.userId)) {
         udp_server.send('登录失败，此用户已在线', udp_client_port, '::1');
       } else {
-        online_clients.push({ udp_port: udp_client_port, userId: user.userId });
+        online_clients.push({
+          udp_port: udp_client_port,
+          userId: user.userId,
+          username: user.username,
+        });
         udp_server.send(`登录成功。`, udp_client_port, '::1');
         for (const client of online_clients) {
           udp_server.send(
@@ -119,14 +123,18 @@ const tcp_server = net.createServer((socket) => {
     }
   });
 
-  setInterval(() => {
+  setInterval(async () => {
     socket.write(
       ConstructTransportMessage(
         'ports',
         online_clients.map((c) => c.udp_port).join(',')
       )
     );
-  }, 10000);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    socket.write(
+      ConstructTransportMessage('clients', JSON.stringify(online_clients))
+    );
+  }, 5000);
 });
 
 // 服务器监听端口
